@@ -1,3 +1,4 @@
 /src/data
 /src/keys
 src/.env
+.venv
