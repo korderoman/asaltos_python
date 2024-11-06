@@ -1,5 +1,6 @@
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 
 class DeepLearningController:
     def __init__(self):
@@ -7,7 +8,8 @@ class DeepLearningController:
         self.output_video_local_path = "../data"
 
     def check_if_video_exists(self, id_video):
-        full_path=os.path.abspath(os.path.join(os.path.dirname(__file__), "..","..","..","backend","data",id_video+".mp4"))
+        directory=os.getenv("DIRECTORY_JS_APP")
+        full_path=os.path.abspath(os.path.join(os.path.dirname(__file__), "..","..","..",directory,"data",id_video+".mp4"))
         if os.path.exists(full_path):
             return True
         return False
