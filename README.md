@@ -1,0 +1,1 @@
+activar el entorno: source asaltos_env/bin/activate
