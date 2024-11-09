@@ -38,6 +38,7 @@ class PipelineController:
             os.path.join(os.path.dirname(__file__), "..", "data","pre_procesado.avi"))
 
     def predecir_video(self, input_path, output_path):
+        print("Iniciando la predicción")
         # Pre_procesar el video antes de extraer características
         pre_procesado_path = self.get_output_pre_processed_path()
         self.pre_procesar_y_guardar_video(input_path, output_path)
@@ -64,38 +65,42 @@ class PipelineController:
 
     def pre_procesar_y_guardar_video(self, video_path, output_path, target_width=224, target_height=224, target_fps=15,
                                      to_gray=True):
-        cap = cv2.VideoCapture(video_path)
-        if not cap.isOpened():
-            print(f"Error al abrir el video: {video_path}")
-            return
+        print("Iniciando el pre procesamiento")
+        try:
+            cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                print(f"Error al abrir el video: {video_path}")
+                return
 
-        original_fps = cap.get(cv2.CAP_PROP_FPS)
-        skip_rate = int(original_fps / target_fps) if original_fps > target_fps else 1
+            original_fps = cap.get(cv2.CAP_PROP_FPS)
+            skip_rate = int(original_fps / target_fps) if original_fps > target_fps else 1
 
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        #fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        is_color = not to_gray
-        out = cv2.VideoWriter(output_path, fourcc, target_fps, (target_width, target_height), isColor=is_color)
+            fourcc = cv2.VideoWriter_fourcc(*'XVID')
+            #fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            is_color = not to_gray
+            out = cv2.VideoWriter(output_path, fourcc, target_fps, (target_width, target_height), isColor=is_color)
 
-        frame_count = 0
-        processed_frames = 0
+            frame_count = 0
+            processed_frames = 0
 
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
 
-            if frame_count % skip_rate == 0:
-                frame = cv2.resize(frame, (target_width, target_height))
-                if to_gray:
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                out.write(frame if to_gray else cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR))
-                processed_frames += 1
+                if frame_count % skip_rate == 0:
+                    frame = cv2.resize(frame, (target_width, target_height))
+                    if to_gray:
+                        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    out.write(frame if to_gray else cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR))
+                    processed_frames += 1
 
-            frame_count += 1
+                frame_count += 1
 
-        cap.release()
-        out.release()
+            cap.release()
+            out.release()
+        except Exception as e:
+            print(f"Error durante el preprocesamiento {e}")
 
     def verificar_video_ffmpeg(self, video_path):
         try:
@@ -134,28 +139,33 @@ class PipelineController:
             print("Error al verificar las propiedades del video con FFmpeg:", e)
 
     def extraer_caracteristicas(self, video_path, extractor, batch_size=32):
-        cap = cv2.VideoCapture(video_path)
-        frames_features = []
-        batch_frames = []
+        print("Iniciando la extracción de características")
+        try:
 
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                if len(batch_frames) > 0:  # Asegúrate de procesar el último lote
+            cap = cv2.VideoCapture(video_path)
+            frames_features = []
+            batch_frames = []
+
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    if len(batch_frames) > 0:  # Asegúrate de procesar el último lote
+                        batch_tensor = torch.stack(batch_frames).to(self.device)
+                        features = extractor(batch_tensor)
+                        frames_features.extend(features.cpu())  # Guardar características a lista
+                    break
+
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame_tensor = self.transform(frame_rgb)
+                batch_frames.append(frame_tensor)
+
+                if len(batch_frames) == batch_size:
                     batch_tensor = torch.stack(batch_frames).to(self.device)
                     features = extractor(batch_tensor)
                     frames_features.extend(features.cpu())  # Guardar características a lista
-                break
+                    batch_frames = []  # Reiniciar el lote
 
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_tensor = self.transform(frame_rgb)
-            batch_frames.append(frame_tensor)
-
-            if len(batch_frames) == batch_size:
-                batch_tensor = torch.stack(batch_frames).to(self.device)
-                features = extractor(batch_tensor)
-                frames_features.extend(features.cpu())  # Guardar características a lista
-                batch_frames = []  # Reiniciar el lote
-
-        cap.release()
-        return torch.stack(frames_features)
+            cap.release()
+            return torch.stack(frames_features)
+        except Exception as e:
+            print(f"Ha ocurrido un error al extraer las características {e}")
