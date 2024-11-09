@@ -66,7 +66,16 @@ class DeepLearningController:
             "-c:a", "libmp3lame", "-b:a", "128k", output_filepath_avi
         ]
         # Ruta completa al ejecutable de FFmpeg
+        try:
+            # Ejecutar el comando de FFmpeg
+            subprocess.run(ffmpeg_command, check=True)
+            print("Conversión completada con éxito.")
+            return output_filepath_avi
+        except subprocess.CalledProcessError as e:
+            print(f"Error durante la conversión: {e}")
+        except FileNotFoundError:
+            print("FFmpeg no está instalado o no se encuentra en el PATH.")
+        except Exception as e:
+            print(f"Ha ocurrido un error inesperado: {e}")
 
-        subprocess.run(ffmpeg_command, check=True)
-        return output_filepath_avi
 
