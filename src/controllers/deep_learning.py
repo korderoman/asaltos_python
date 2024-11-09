@@ -37,7 +37,7 @@ class DeepLearningController:
             #print("data",output_path_avi, input_path_avi)
             prediction=self.pipelineController.predecir_video(input_path_avi, output_path_avi)
             return {"success": True, "message": "El vídeo ha sido procesado con éxito",
-                    "extras": {"local_path": output_path_avi, "name_file": f"{id_video}_learned.mp4","has_violence":self.has_violence(prediction)}}
+                    "extras": {"local_path": output_path_avi, "name_file": f"{id_video}_learned.avi","has_violence":self.has_violence(prediction)}}
         return {"success": False, "message": "El video no existe o no ha sido posible procesarlo"}
 
     def pass_to_output_path_avi_processed(self, output_path):
