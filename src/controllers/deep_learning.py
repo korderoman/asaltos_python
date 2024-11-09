@@ -57,9 +57,13 @@ class DeepLearningController:
         ffmpeg_path="ffmpeg"
         if platform.system() == "Windows":
             ffmpeg_path = r"C:\ffmpeg\bin\ffmpeg.exe"
+        #ffmpeg_command = [
+         #   ffmpeg_path, '-i', input_path_mp4, '-c:v', 'libxvid', '-qscale:v', '5','-c:a', 'libmp3lame', '-qscale:a', '4','-y',
+          #  output_filepath_avi
+        #]
         ffmpeg_command = [
-            ffmpeg_path, '-i', input_path_mp4, '-c:v', 'libxvid', '-qscale:v', '5','-c:a', 'libmp3lame', '-qscale:a', '4','-y',
-            output_filepath_avi
+            ffmpeg_path, "-y", "-i", input_path_mp4, "-c:v", "libxvid", "-b:v", "500k",
+            "-c:a", "libmp3lame", "-b:a", "128k", output_filepath_avi
         ]
         # Ruta completa al ejecutable de FFmpeg
 
