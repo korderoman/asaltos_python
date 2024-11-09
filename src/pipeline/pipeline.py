@@ -46,11 +46,14 @@ class PipelineController:
         caracteristicas = self.extraer_caracteristicas(output_path, self.extractor)
 
         # Asegurarse de que las características estén en el dispositivo correcto
+        print("Asegurando que las características estén en el dispositivo correcto")
         caracteristicas = caracteristicas.unsqueeze(0).to(self.device)  # Añadir dimensión de batch
 
         # Poner el modelo en modo de evaluación
+        print("Iniciando el modelo en modo evaluación")
         self.model.eval()
         # Realizar la predicción
+        print("Realizando la predicción")
         with torch.no_grad():
             salida = self.model(caracteristicas)
             _, prediccion = torch.max(salida, 1)
@@ -99,6 +102,7 @@ class PipelineController:
 
             cap.release()
             out.release()
+            print("El guardado ha finalizado exitosamente")
         except Exception as e:
             print(f"Error durante el preprocesamiento {e}")
 
@@ -166,6 +170,7 @@ class PipelineController:
                     batch_frames = []  # Reiniciar el lote
 
             cap.release()
+            print("La extracción de características ha finalizado exitosamente")
             return torch.stack(frames_features)
         except Exception as e:
             print(f"Ha ocurrido un error al extraer las características {e}")
