@@ -78,8 +78,8 @@ class PipelineController:
             original_fps = cap.get(cv2.CAP_PROP_FPS)
             skip_rate = int(original_fps / target_fps) if original_fps > target_fps else 1
 
-            #fourcc = cv2.VideoWriter_fourcc(*'XVID')
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            fourcc = cv2.VideoWriter_fourcc(*'XVID')
+            #fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             is_color = not to_gray
             out = cv2.VideoWriter(output_path, fourcc, target_fps, (target_width, target_height), isColor=is_color)
 
@@ -143,6 +143,7 @@ class PipelineController:
             print("Error al verificar las propiedades del video con FFmpeg:", e)
 
     def extraer_caracteristicas(self, video_path, extractor, batch_size=32):
+        self.verificar_video_ffmpeg(video_path=video_path)
         print("Iniciando la extracción de características")
         try:
 
